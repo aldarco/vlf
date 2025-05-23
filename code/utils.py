@@ -9,7 +9,8 @@ import os
 import sys
 sys.path.append("/home/aldo//notebooks/code")
 import fft_pavnet
-import datetime.datetime as dtime
+import scipy.signal as signal
+from datetime import datetime as dtime
 
 
 def get_content(ftar):
@@ -25,9 +26,7 @@ def get_dt_fname_v3(fname, loc="PLO"):
     dt_ = dtime.strptime(fname, "%Y_%m_%d_%H_%M_%S")
     return dt_
 
-def fft_method(st, fft_npts=2**13, wf=np.blackman):
-    #return fft_pavnet.fft_window(st, wlen=fft_npts,fw=signal.windows.flattop)
-    return fft_pavnet.fft_overlap(st, fft_npts=fft_npts,window=wf)
+
 
 def basebandiq(x, tt, fc, bw=100, fs=50e3):
     '''
@@ -45,19 +44,52 @@ def basebandiq(x, tt, fc, bw=100, fs=50e3):
 
     xi = np.cos(2*np.pi*fc*tt)  * x
     xq = -np.sin(2*np.pi*fc*tt) * x
-    lpf = firwin(101, cutoff=bw, fs=fs)
+    lpf = signal.firwin(101, cutoff=bw, fs=fs)
     xi = signal.filtfilt(lpf, 1, xi)
     xq = signal.filtfilt(lpf, 1, xq)
 
     return xi, xq
 
-def IQ_clipping_filter(iq, nstd=None):
-    # clip_min, clip_max = np, 1.0
-    # iq : array, shape
-    if not nstd: nstd = 3
-    ithr = nstd * np.std(iq[:, 0])
-    qthr = nstd * np.std(iq[:, 1])
-    I_clipped = np.clip(iq[:,0], -ithr, ithr)
-    Q_clipped = np.clip(iq[:,1], -qthr, qthr)
-    return I_clipped, Q_clipped
 
+
+def IQ_frombin(f):
+    '''
+    Read IQ data from a binary file (pavnet structured)
+    '''
+    #file_path = file_list[k]
+    #print(f"Now reading {file_path}");
+    
+    #with open(file_path, 'rb') as f:
+    header = f.read(70)
+    sizeIQ = f.read(30)
+    size_str = sizeIQ.decode(errors='ignore')
+    size_start = size_str.find("#size ")
+    size_end = size_str.find("\n", size_start)
+    sizefileIQ = size_str[size_start+6:size_end].strip()
+    sizedata = int(sizefileIQ)
+    
+    I = np.fromfile(f, dtype=np.float32, count=sizedata)
+    Q = np.fromfile(f, dtype=np.float32, count=sizedata)
+    PPS = f.read(30)      
+    
+    return np.array([I,Q])
+    
+def read_binary_IQ(f):
+
+    header = f.read(70)
+    sizeIQ = f.read(30)
+    size_str = sizeIQ.decode(errors='ignore')
+    size_start = size_str.find("#size ")
+    size_end = size_str.find("\n", size_start)
+    sizefileIQ = size_str[size_start+6:size_end].strip()
+    sizedata = int(sizefileIQ)
+
+    # Read I and Q data as binary and convert
+    I_data = f.read(sizedata * 4)  # float32 is 4 bytes
+    Q_data = f.read(sizedata * 4)
+
+    I = np.frombuffer(I_data, dtype=np.float32)
+    Q = np.frombuffer(Q_data, dtype=np.float32)
+
+    PPS = f.read(30)
+    return np.asarray([I,Q])

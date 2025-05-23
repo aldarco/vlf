@@ -1,0 +1,39 @@
+
+
+{
+
+    "DSP":{
+        "sampling_frequency":100e3,
+        "fft_npts":32768,
+        "method": "overlap",
+        "overlap_percent" : 50,
+        "ut_timeoffset": 5,
+        "vlf_transmitters": {
+            "NPM":21.4e3, 
+            "NAA":24.0e3, 
+            "NLK":24.8e3, 
+            "NLM":25.2e3,
+            "NAU":40.75e3
+            },
+        "location" : "PLO",
+        "localdb" : "datavlf",
+        "min_filesize": 80000
+    },
+
+    "RedPitaya": {        
+        "hostname" : "10.42.0.42",
+        "port" : 22,
+        "username" : "root",
+        "password" : "escondido",
+        "remote_dir" : "/mnt/ramdisk/",
+        "local_dir" : "/home/pavnet/backup_pavnet_files/"
+
+    },
+
+    "DataBase":{
+        "org":      "vlf",
+        "url":      "http://192.168.50.122:8086",
+        "bucket":   "data_PLO",
+        "measurement": "amplitude_raw"
+    }
+}
