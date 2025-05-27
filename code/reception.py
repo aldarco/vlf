@@ -15,8 +15,7 @@ import time
 import tarfile
 import signal
 import gc
-import fft_pavnet
-import utils
+
 import station
 import json
 from  collections import deque
@@ -24,7 +23,7 @@ import threading
 
 gc.collect()
 
-with open('config_params.json', 'r') as f:
+with open('./config_params.json', 'r') as f:
     config = json.load(f)
     #print(json.dumps(config, indent=4))
 
@@ -44,6 +43,7 @@ spectrum = np.zeros(sproc.fft_npts)
 print("VLF TX", Txs)
 
 def reception():
+    global spectrum
     lps = [] #line protocol strings
     while not stop_event.is_set():
         data = ftp.available_data()
@@ -54,9 +54,9 @@ def reception():
         t0 = time.perf_counter()
         for t, iq in zip(t_arr, iq_arr):
             
-            amps_, spectrum  = sproc.get_amplitudes(iq)
+            amps_, Sx  = sproc.get_amplitudes(iq)
             amps_["DateTime"] = t
-            savg += spectrum
+            savg += Sx
             #lps.append(
             #    "{meas}, "
                 #)
@@ -100,7 +100,8 @@ def handle_exit( sig=None, frame=None):
     print("\n[main] Shutting down...")
     stop_event.set()
     reception_thread.join()
-    
+    ftp.sftp.close()
+    ftp.transport.close()
     plt.close('all')
     sys.exit(0)
 

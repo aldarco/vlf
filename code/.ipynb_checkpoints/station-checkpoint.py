@@ -58,7 +58,7 @@ class RPftp:
             #self.sftp.get(self.remote_path, self.local_path) #downloads directri to local
             with self.sftp.open(remote_file,"+rb") as remf:
                 #iq = utils.IQ_frombin(remf)
-                ##remf.write(local_file)
+                remf.write(local_file)
                 iq = utils.read_binary_IQ(remf).T
                 
             print(f"Opened remote: {remote_file}.")     
@@ -100,9 +100,8 @@ class dsp:
             self.ftx_indexrange.append([id_0, id_f])
         
         self.hpf = signal.firwin(51, cutoff=12e3, window="hamming", fs=self.sampling_freq)
-        print(self.freq_arr)
         print("DSP Set Ok")
-
+    
     def get_amplitudes(self, x):
         '''
         x: signal in time
@@ -122,7 +121,7 @@ class dsp:
         # local universal time : localt +5h
         #t = utils.get_dt_fname_v3(str(f)) + datetime.timedelta(hours=self.TOFFSET))
         #print("\napplying FFT {}".format(method))
-        S = self.fft_method(iq) #fft_pavnet.fft_window(st, wlen=fft_npts,fw=signal.windows.flattop)
+        S = self.fft_method(iq, fft_npts=self.fft_npts) #fft_pavnet.fft_window(st, wlen=fft_npts,fw=signal.windows.flattop)
         amplitudes = {f"{tx}":[] for tx in self.vlf_transmitters.keys()}
         #print(amplitudes)
         for k, (tx_call, tx_f) in enumerate(self.vlf_transmitters.items()):
