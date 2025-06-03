@@ -99,7 +99,7 @@ class dsp:
             id_f = np.argmin(abs(self.freq_arr-(f+self.bw/2)))
             self.ftx_indexrange.append([id_0, id_f])
         
-        self.hpf = signal.firwin(51, cutoff=12e3, window="hamming", fs=self.sampling_freq)
+        self.hpf = signal.firwin(51, cutoff=12e3, window="hamming", fs=self.sampling_freq, pass_zero="highpass")
         print(self.freq_arr)
         print("DSP Set Ok")
 
@@ -108,7 +108,7 @@ class dsp:
         x: signal in time
         hpf: high pass filter
 
-        returns amplitudes of each Tx by using the spectrum of a signal x
+        returns amplitudes (Dict.) of each Tx by using the spectrum of a signal x
         '''
         #print(x)
         #print("signal shape", x.shape)

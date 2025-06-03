@@ -11,7 +11,7 @@ sys.path.append("/home/aldo//notebooks/code")
 import fft_pavnet
 import scipy.signal as signal
 from datetime import datetime as dtime
-
+import time
 
 def get_content(ftar):
     # obtener archivo de datos (TXT) contenido en el comprimido tar.gz
@@ -93,3 +93,20 @@ def read_binary_IQ(f):
 
     PPS = f.read(30)
     return np.asarray([I,Q])
+
+def is_file_stable(filepath, wait_time=0.2, max_iter=6):
+    # file size stable 
+    size1 = os.path.getsize(filepath)
+    time.sleep(wait_time)
+    size2 = os.path.getsize(filepath)
+    it = 0
+    while size1 != size2 and it<max_iter:
+        try:
+            size1 = size2
+            time.sleep(wait_time)
+            size2 = os.path.getsize(filepath)
+            #return size1 == size2
+        except FileNotFoundError:
+            return False
+        it += 1
+    return size1 == size2
