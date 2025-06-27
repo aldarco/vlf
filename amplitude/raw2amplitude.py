@@ -43,8 +43,13 @@ TOFFSET = 5 # hours
 folder1 = sys.argv[1] # "/data/pavnet/2025/PIURA/09042025/" # contains subfolders
 # each subfolder contains a day of data
 resfolder = '/'+"/".join(folder1.split("/")[:-2]) # path for outputs)
-subfolders = [sf for sf in os.listdir(folder1) if sf.startswith(LOC+"_")]#!ls $folder1
-
+subfolders = [sf for sf in os.listdir(folder1)]#!ls $folder1
+print(
+    f'''
+    Data: {folder1}
+    No. subfolders: {len(subfolders)}
+    Output path: {resfolder}
+    ''')
 signal_len = Npts
 
 method ="overlap" # window or overlap
@@ -94,8 +99,12 @@ fc = 24e3
 t = np.arange(signal_len)/fs
 data = pd.DataFrame()
 
+def fft_method(st):
+    #return fft_pavnet.fft_window(st, wlen=fft_npts,fw=signal.windows.flattop)
+    return fft_pavnet.fft_overlap(st, fft_npts=fft_npts,window=signal.windows.flattop)
+
 for subfolder in subfolders[:]:
-    path_ = folder1+"/"+subfolder+"/data/" 
+    path_ = folder1+"/"+subfolder+"/" 
     print("Subfolder:", path_)
     if not os.path.isdir(path_): continue
     fnames = np.array(tools.get_fnames(path_, fmt=".tar.gz"))#
@@ -121,7 +130,7 @@ for subfolder in subfolders[:]:
         # almaecnamos el tiempo en UTC : +5h
         time_arr.append(tools.get_date_from_fname(str(f)) + datetime.timedelta(hours=TOFFSET))
         #print("\napplying FFT {}".format(method))
-        S = utils.fft_method(iq, fft_npts=fft_npts) #fft_pavnet.fft_window(st, wlen=fft_npts,fw=signal.windows.flattop)
+        S = fft_method(iq) #fft_pavnet.fft_window(st, wlen=fft_npts,fw=signal.windows.flattop)
 
         for k, (tx_call, tx_f) in enumerate(vlf_transmitters.items()):
             id_0, id_f = ftx_indexhood[k]

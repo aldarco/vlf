@@ -93,3 +93,13 @@ def read_binary_IQ(f):
 
     PPS = f.read(30)
     return np.asarray([I,Q])
+
+
+def IQ_clipping_filter(iq, nstd=None):
+    #clip_min, clip_max = np, 1.0
+    if not nstd: nstd = 3
+    ithr = nstd * np.std(iq[:, 0])
+    qthr = nstd * np.std(iq[:, 1])
+    I_clipped = np.clip(iq[:,0], -ithr, ithr)
+    Q_clipped = np.clip(iq[:,1], -qthr, qthr)
+    return I_clipped, Q_clipped
