@@ -120,24 +120,28 @@ for subfolder in subfolders[:]:
     nfiles = len(fnames)
     #amplitudes = {tx:[] for tx in vlf_transmitters.keys()}
     for k, f in enumerate(fnames[:]):
-        #print("File {:60s}\t {:7d} of {:7d} processed \t -> {:3.2f} %".format(f,k+1, nfiles, round((k+1)*100/nfiles, 2) ),end="\r")
-        content = utils.get_content(path_+"/"+f)
-        st = pd.read_csv(strio(content.decode()), comment="#", header=None, sep=",").values
-        [st[:,0] , st[:,1]] = utils.IQ_clipping_filter(st)
+        print("File {:60s}\t {:7d} of {:7d} processed \t -> {:3.2f} %".format(f,k+1, nfiles, round((k+1)*100/nfiles, 2) ),end="\r")
+        try:
+            content = utils.get_content(path_+"/"+f)
+            st = pd.read_csv(strio(content.decode()), comment="#", header=None, sep=",").values
+            [st[:,0] , st[:,1]] = utils.IQ_clipping_filter(st)
         
-        iq = signal.filtfilt(hpf, 1, st[:,0]) +1j*signal.filtfilt(hpf, 1, st[:,1])
+            iq = signal.filtfilt(hpf, 1, st[:,0]) +1j*signal.filtfilt(hpf, 1, st[:,1])
                 
-        # almaecnamos el tiempo en UTC : +5h
-        time_arr.append(tools.get_date_from_fname(str(f)) + datetime.timedelta(hours=TOFFSET))
-        #print("\napplying FFT {}".format(method))
-        S = fft_method(iq) #fft_pavnet.fft_window(st, wlen=fft_npts,fw=signal.windows.flattop)
+            # almaecnamos el tiempo en UTC : +5h
+            time_arr.append(tools.get_date_from_fname(str(f)) + datetime.timedelta(hours=TOFFSET))
+            #print("\napplying FFT {}".format(method))
+            S = fft_method(iq) #fft_pavnet.fft_window(st, wlen=fft_npts,fw=signal.windows.flattop)
 
-        for k, (tx_call, tx_f) in enumerate(vlf_transmitters.items()):
-            id_0, id_f = ftx_indexhood[k]
-            wf = freq_arr[id_0:id_f]
-            amp_ = integrate.simpson(S[id_0:id_f], wf)/(wf[-1]-wf[0])
-            #amp_2 = max(S[id_0:id_f])
-            amplitudes[tx_call].append(amp_)
+            for k, (tx_call, tx_f) in enumerate(vlf_transmitters.items()):
+                id_0, id_f = ftx_indexhood[k]
+                wf = freq_arr[id_0:id_f]
+                amp_ = integrate.simpson(S[id_0:id_f], wf)/(wf[-1]-wf[0])
+                #amp_2 = max(S[id_0:id_f])
+                amplitudes[tx_call].append(amp_)
+        except Exception as e:
+            print(f"\nFile Err: {f} \n[!] {e}")
+    print()
 '''
     if kit=True:
         df = pd.DataFrame(amplitudes,index=time_arr)

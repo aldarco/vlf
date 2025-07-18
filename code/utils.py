@@ -94,7 +94,6 @@ def read_binary_IQ(f):
     PPS = f.read(30)
     return np.asarray([I,Q])
 
-<<<<<<< HEAD
 
 def IQ_clipping_filter(iq, nstd=None):
     #clip_min, clip_max = np, 1.0
@@ -104,7 +103,7 @@ def IQ_clipping_filter(iq, nstd=None):
     I_clipped = np.clip(iq[:,0], -ithr, ithr)
     Q_clipped = np.clip(iq[:,1], -qthr, qthr)
     return I_clipped, Q_clipped
-=======
+
 def is_file_stable(filepath, wait_time=0.2, max_iter=6):
     # file size stable 
     size1 = os.path.getsize(filepath)
@@ -121,4 +120,4 @@ def is_file_stable(filepath, wait_time=0.2, max_iter=6):
             return False
         it += 1
     return size1 == size2
->>>>>>> cc96e4fe3f6a5873ec44d95648c0ed9ab50db550
+
